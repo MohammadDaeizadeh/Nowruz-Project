@@ -6,7 +6,7 @@ import org.App.contents.Song;
 import java.util.*;
 
 public class Artist extends Account {
-    private boolean isApproved = true; // Default to false requiring admin approval
+    private boolean isApproved = false; // Default to false requiring admin approval
     private final Set<Integer> artistFollowersIds = new HashSet<>();
     private final Set<Integer> songIds = new HashSet<>();
     public final Set<Integer> albumIds = new HashSet<>();
