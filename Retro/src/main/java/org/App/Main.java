@@ -90,7 +90,8 @@ public class Main {
         JLabel passwordLabel = new JLabel("Password:");
         JPasswordField passwordField = new JPasswordField();
         JButton loginButton = new JButton("Login");
-        JButton registerButton = new JButton("Register");
+        JButton registerButton = createStyledButton("Create Account", new Color(70, 130, 180));
+        registerButton.setForeground(Color.BLUE);
 
         frame.add(emailLabel);
         frame.add(emailField);
@@ -125,7 +126,7 @@ public class Main {
     }
 
     private static void showRegistrationFrame() {
-        JFrame frame = new JFrame("Music App - Register");
+        JFrame frame = new JFrame("Music App - Sign up");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 400);
         frame.setLayout(new GridLayout(7, 2, 10, 10));
@@ -140,7 +141,7 @@ public class Main {
         JTextField ageField = new JTextField();
         JLabel accountTypeLabel = new JLabel("Account Type:");
         JComboBox<String> accountTypeCombo = new JComboBox<>(new String[]{"User", "Artist"});
-        JButton registerButton = new JButton("Register");
+        JButton registerButton = new JButton("Sign up");
         JButton backButton = new JButton("Back to Login");
 
         frame.add(usernameLabel);
@@ -566,12 +567,16 @@ public class Main {
         menuBar.add(accountMenu);
 
         if (currentUser instanceof Admin) {
-            JMenu adminMenu = new JMenu("Admin");
+            JMenu adminMenu = new JMenu("Acceptation");
             JMenuItem approveArtistsItem = new JMenuItem("Approve Artists");
             adminMenu.add(approveArtistsItem);
+            approveArtistsItem.addActionListener(e -> showArtistApprovalDialog());
             menuBar.add(adminMenu);
 
-            approveArtistsItem.addActionListener(e -> showArtistApprovalDialog());
+            JMenuItem moderationItem = new JMenuItem("Moderation");
+            moderationItem.addActionListener(e -> showAdminModerationPanel());
+            menuBar.add(moderationItem);
+
         }
 
         frame.setJMenuBar(menuBar);
@@ -634,12 +639,6 @@ public class Main {
             profileButton.setBackground(new Color(70, 130, 180));
             profileButton.addActionListener(e -> showProfilePanel());
             mainPanel.add(profileButton, BorderLayout.SOUTH);
-        }
-
-        if (currentUser instanceof Admin) {
-            JMenuItem moderationItem = new JMenuItem("Moderation Panel");
-            moderationItem.addActionListener(e -> showAdminModerationPanel());
-            menuBar.add(moderationItem);
         }
 
 
@@ -1036,33 +1035,35 @@ public class Main {
         headerPanel.add(titleLabel, BorderLayout.CENTER);
 
 
-        JButton deleteButton = createStyledButton("Delete Song", new Color(199, 0, 57));
-        deleteButton.setForeground(accentColor);
-        deleteButton.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(detailsFrame,
-                    "Are you sure you want to delete this song?",
-                    "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+        if (currentUser instanceof Artist && song.getArtistIds().contains(currentUser.getId())) {
+            JButton deleteButton = createStyledButton("Delete Song", new Color(199, 0, 57));
+            deleteButton.setForeground(accentColor);
+            deleteButton.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(detailsFrame,
+                        "Are you sure you want to delete this song?",
+                        "Confirm Deletion", JOptionPane.YES_NO_OPTION);
 
-            if (confirm == JOptionPane.YES_OPTION) {
-                Artist artist = (Artist) currentUser;
+                if (confirm == JOptionPane.YES_OPTION) {
+                    Artist artist = (Artist) currentUser;
 
-                // Remove song from artist's collection
-                artist.removeSong(song.getId());
+                    // Remove song from artist's collection
+                    artist.removeSong(song.getId());
 
-                // Remove song from global songs set
-                songs.removeIf(s -> s.getId() == song.getId());
+                    // Remove song from global songs set
+                    songs.removeIf(s -> s.getId() == song.getId());
 
-                // Remove song from any albums it belongs to
-                for (Album album : albums.values()) {
-                    album.removeTrack(song.getId());
+                    // Remove song from any albums it belongs to
+                    for (Album album : albums.values()) {
+                        album.removeTrack(song.getId());
+                    }
+
+                    JOptionPane.showMessageDialog(detailsFrame, "Song deleted successfully!");
+                    detailsFrame.dispose();
+                    showArtistSongsPanel(artist);
                 }
-
-                JOptionPane.showMessageDialog(detailsFrame, "Song deleted successfully!");
-                detailsFrame.dispose();
-                showArtistSongsPanel(artist);
-            }
-        });
-        headerPanel.add(deleteButton, BorderLayout.EAST);
+            });
+            headerPanel.add(deleteButton, BorderLayout.EAST);
+        }
 
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
